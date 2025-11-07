@@ -1,1 +1,65 @@
-# my-photo-app
+[index.html](https://github.com/user-attachments/files/23412018/index.html)
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>내 사진앱</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#0ea5e9" />
+  <style>
+    body { font-family: system-ui, sans-serif; margin:0; text-align:center; background:#f8fafc; }
+    header { background:#0ea5e9; color:white; padding:14px; font-size:1.3rem; }
+    main { padding:20px; }
+    video, img { width:100%; border-radius:16px; box-shadow:0 4px 12px rgba(0,0,0,0.1); }
+    button { background:#0ea5e9; color:white; border:none; border-radius:12px; padding:12px 20px; margin-top:14px; font-size:1rem; }
+    button:active { background:#0284c7; }
+  </style>
+</head>
+<body>
+  <header>📸 내 사진앱</header>
+  <main>
+    <video id="video" autoplay playsinline></video>
+    <br>
+    <button id="snap">사진 찍기</button>
+    <canvas id="canvas" style="display:none;"></canvas>
+    <img id="preview" alt="촬영된 사진" style="margin-top:20px; display:none;">
+  </main>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+
+    async function startCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        document.getElementById('video').srcObject = stream;
+      } catch (err) {
+        alert('카메라 접근 불가: ' + err.message);
+      }
+    }
+    startCamera();
+
+    document.getElementById('snap').onclick = () => {
+      const video = document.getElementById('video');
+      const canvas = document.getElementById('canvas');
+      const preview = document.getElementById('preview');
+      const ctx = canvas.getContext('2d');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0);
+      const data = canvas.toDataURL('image/png');
+      preview.src = data;
+      preview.style.display = 'block';
+      savePhoto(data);
+    };
+
+    function savePhoto(dataUrl) {
+      const key = 'photo_' + new Date().toISOString();
+      localStorage.setItem(key, dataUrl);
+      console.log('저장됨:', key);
+    }
+  </script>
+</body>
+</html>
